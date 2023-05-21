@@ -1,23 +1,18 @@
+import importlib
+import pkgutil
 import sys
+from app.command import CommandParser, CommandRunner
 
-from dataclasses import dataclass
+for command in ("db_info", "tables"):
+    module_name = f"app.commands.{command}"
+    module = importlib.import_module(module_name)
 
-# import sqlparse - available if you need it!
 
-database_file_path = sys.argv[1]
-command = sys.argv[2]
+def main(args):
+    parser = CommandParser(args)
+    runner = CommandRunner(parser=parser)
+    runner.run()
 
-if command == ".dbinfo":
-    with open(database_file_path, "rb") as database_file:
-        # You can use print statements as follows for debugging, they'll be visible when running tests.
-        print("Logs from your program will appear here!")
 
-        # Uncomment this to pass the first stage
-        database_file.seek(16)  # Skip the first 16 bytes of the header
-        page_size = int.from_bytes(database_file.read(2), byteorder="big")
-        database_file.seek(103)  # Skip the first 16 bytes of the header
-        table_count = int.from_bytes(database_file.read(2), byteorder="big")
-        print(f"database page size: {page_size}")
-        print(f"number of tables: {table_count}")
-else:
-    print(f"Invalid command: {command}")
+if __name__ == "__main__":
+    main(sys.argv)
